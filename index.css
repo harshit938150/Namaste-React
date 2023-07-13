@@ -43,3 +43,7 @@
 .resImage{
     width: 200px;
 }
+.filter-btn{
+    margin: 10px;
+    cursor: pointer;
+}
