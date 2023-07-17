@@ -1,13 +1,40 @@
 import RestaurantCard from "./RestrauntCard";
-import resList from "../utils/mockData";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Shimmer from "./Shimmer";
 
 const Body = () =>{
 
-    const [hotelLists,sethotelLists] = useState(resList);
-    return(
+    const [hotelLists,sethotelLists] = useState([]);
+    const [filteredHotelLists,setFilteredHotelLists] = useState([]);
+    const [searchText, setSearchText] = useState("");
+    useEffect(()=>{
+        fetchData();
+    },[])
+
+    const fetchData = async ()=>{
+        const data = await fetch("https://www.swiggy.com/dapi/restaurants/list/v5?lat=17.385044&lng=78.486671&page_type=DESKTOP_WEB_LISTING");
+        const json = await data.json(data)
+        console.log(json);
+        sethotelLists(json.data.cards[2]?.data?.data?.cards);
+        setFilteredHotelLists(json.data.cards[2]?.data?.data?.cards);
+    };
+
+    return hotelLists.length ===0 ? <Shimmer/> :(
         <div className="body">
             <div className="filter">
+                <div className="search">
+                    <input type="text" className="search-box" value={searchText} onChange={(e)=>{
+                        setSearchText(e.target.value)
+                        searchedItem = searchText;
+                        }}></input>
+                    <button onClick={()=>{
+                        let filterData = hotelLists.filter((hotel)=> 
+                            hotel.data.name.toLowerCase().includes(searchText) 
+                        );
+                        setFilteredHotelLists(filterData);
+                        
+                    }}>search</button>
+                </div>
                 <button className="filter-btn" onClick={() => {
            const list = hotelLists.filter(
               (res) => res.data.avgRating > 4
@@ -18,7 +45,7 @@ const Body = () =>{
             </div>
             <div className="res-container">
             {
-                hotelLists.map((restaurant) => (
+                filteredHotelLists.map((restaurant) => (
                  <RestaurantCard key ={restaurant.data.id} resData = {restaurant}/>))
             }
             </div>
