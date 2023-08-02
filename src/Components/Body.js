@@ -2,6 +2,7 @@ import RestaurantCard from "./RestrauntCard";
 import { useEffect, useState } from "react";
 import Shimmer from "./Shimmer";
 import { Link } from "react-router-dom";
+import useOnlineStatus from "../utils/useOnlineStatus";
 const Body = () =>{
 
     const [hotelLists,sethotelLists] = useState([]);
@@ -14,9 +15,14 @@ const Body = () =>{
     const fetchData = async ()=>{
         const data = await fetch("https://www.swiggy.com/dapi/restaurants/list/v5?lat=17.385044&lng=78.486671&page_type=DESKTOP_WEB_LISTING");
         const json = await data.json(data)
-        console.log(json);
-        sethotelLists(json.data.cards[2]?.data?.data?.cards);
-        setFilteredHotelLists(json.data.cards[2]?.data?.data?.cards);
+        sethotelLists(json.data.cards[2]?.card?.card?.gridElements?.infoWithStyle?.restaurants);
+        setFilteredHotelLists(json.data.cards[2]?.card?.card?.gridElements?.infoWithStyle?.restaurants);
+    };
+    const onlineStatus = useOnlineStatus();
+    if(onlineStatus === false){
+        return (
+            <h1>Looks like you are offline!! Check your internet connection</h1>
+        );
     };
 
     return hotelLists.length ===0 ?<Shimmer/> :(
@@ -29,7 +35,7 @@ const Body = () =>{
                         }}></input>
                     <button onClick={()=>{
                         let filterData = hotelLists.filter((hotel)=> 
-                            hotel.data.name.toLowerCase().includes(searchText) 
+                            hotel.info.name.toLowerCase().includes(searchText) 
                         );
                         setFilteredHotelLists(filterData);
                         
@@ -46,10 +52,9 @@ const Body = () =>{
             <div className="res-container">
             {     
                 filteredHotelLists.map((restaurant) => (
-                <Link to={"/restaurants/" + restaurant.data.id} key ={restaurant.data.id}><RestaurantCard resData = {restaurant}/></Link>
+                <Link to={"/restaurants/" + restaurant?.info.id} key ={restaurant?.info.id}><RestaurantCard resData = {restaurant}/></Link>
                 
                 ))}
-            {console.log("test")}
             </div>
         </div>
     );
